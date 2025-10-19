@@ -154,6 +154,7 @@ namespace MemoryApp
         private void SwitchTurn()
         {
             Turn = Turn == "One" ? TurnEnum.Two.ToString() : TurnEnum.One.ToString();
+            ShowTurn();
         }
 
         private void TallyScore()
@@ -168,7 +169,7 @@ namespace MemoryApp
             }
         }
 
-        private void DetectMatch()
+        private async void DetectMatch()
         {
             if (Guess1 == Guess2)
             {
@@ -177,6 +178,7 @@ namespace MemoryApp
             }
             else
             {
+                await Task.Delay(500);
                 lstButtons.Where(b => (b.Text != "" && b.Enabled == true)).ToList().ForEach(b => b.Text = "");
                 SwitchTurn();
             }
@@ -230,7 +232,7 @@ namespace MemoryApp
         {
             lblP1Score.Text = Score1.ToString();
             lblP2Score.Text = Score2.ToString();
-            ShowTurn();
+            //ShowTurn();
         }
 
         private void Error()
@@ -285,7 +287,6 @@ namespace MemoryApp
                 DoTurn();
                 DisplayStatus();
             }
-
         }
     }
 }
