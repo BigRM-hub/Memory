@@ -65,90 +65,18 @@ namespace MemoryApp
         {
             btn.Text = lst[n].ToString();
             SaveResult(lst[n].ToString());
+            DisableButton(btn);
+        }
+
+        private void DisableButton(Button btn)
+        {
+            btn.Enabled = false;
         }
 
         private void AssignButton(Button btn)
         {
-            if (btn == btn1)
-            {
-                ShowSymbol(btn, 0);
-            }
-            if (btn == btn2)
-            {
-                ShowSymbol(btn, 1);
-            }
-            if (btn == btn3)
-            {
-                ShowSymbol(btn, 2);
-            }
-            if (btn == btn4)
-            {
-                ShowSymbol(btn, 3);
-            }
-            if (btn == btn5)
-            {
-                ShowSymbol(btn, 4);
-            }
-            if (btn == btn6)
-            {
-                ShowSymbol(btn, 5);
-            }
-            if (btn == btn7)
-            {
-                ShowSymbol(btn, 6);
-            }
-            if (btn == btn8)
-            {
-                ShowSymbol(btn, 7);
-            }
-            if (btn == btn9)
-            {
-                ShowSymbol(btn, 8);
-            }
-            if (btn == btn10)
-            {
-                ShowSymbol(btn, 9);
-            }
-            if (btn == btn11)
-            {
-                ShowSymbol(btn, 10);
-            }
-            if (btn == btn12)
-            {
-                ShowSymbol(btn, 11);
-            }
-            if (btn == btn13)
-            {
-                ShowSymbol(btn, 12);
-            }
-            if (btn == btn14)
-            {
-                ShowSymbol(btn, 13);
-            }
-            if (btn == btn15)
-            {
-                ShowSymbol(btn, 14);
-            }
-            if (btn == btn16)
-            {
-                ShowSymbol(btn, 15);
-            }
-            if (btn == btn17)
-            {
-                ShowSymbol(btn, 16);
-            }
-            if (btn == btn18)
-            {
-                ShowSymbol(btn, 17);
-            }
-            if (btn == btn19)
-            {
-                ShowSymbol(btn, 18);
-            }
-            if (btn == btn20)
-            {
-                ShowSymbol(btn, 19);
-            }
+            int index = lstButtons.IndexOf(btn);
+            ShowSymbol(btn, index);
         }
 
         private void SwitchTurn()
@@ -175,15 +103,18 @@ namespace MemoryApp
             {
                 TallyScore();
                 lstButtons.Where(b => b.Text != "").ToList().ForEach(b => b.Enabled = false);
+                lstButtons.Where(b => b.Text == "").ToList().ForEach(b => b.Enabled = true);
+                GameOver();
             }
             else
             {
                 await Task.Delay(500);
-                lstButtons.Where(b => (b.Text != "" && b.Enabled == true)).ToList().ForEach(b => b.Text = "");
+                lstButtons.Where(b => (b.Text == "" || b.Text == Guess1 || b.Text == Guess2)).ToList().ForEach(b => { b.Text = ""; b.Enabled = true; });
                 SwitchTurn();
             }
             Guess1 = "NO";
             Guess2 = "GO";
+            //(b.Text != "" && b.Enabled == true)
         }
 
         private void SaveResult(String s)
@@ -203,6 +134,7 @@ namespace MemoryApp
             ClickCount = ClickCount + 1;
             if (ClickCount == 2)
             {
+                lstButtons.ForEach(b => b.Enabled = false);
                 DetectMatch();
                 ClickCount = 0;
             }
@@ -232,7 +164,8 @@ namespace MemoryApp
         {
             lblP1Score.Text = Score1.ToString();
             lblP2Score.Text = Score2.ToString();
-            //ShowTurn();
+            lblPlayer1.Text = txtPlayer1.Text;
+            lblPlayer2.Text = txtPlayer2.Text;
         }
 
         private void Error()
@@ -249,6 +182,29 @@ namespace MemoryApp
             lblP1Score.Text = "";
             lblPlayer2.Text = "Player 2:";
             lblP2Score.Text = "";
+            lblGameOver.Text = "";
+            Turn = TurnEnum.One.ToString();
+        }
+
+        private void GameOver()
+        {
+            string m = "";
+            if (lstButtons.Count(b => b.Text == "") == 0)
+            {
+                if (Score1 > Score2)
+                {
+                    m = txtPlayer1.Text + " WINS!";
+                }
+                if (Score2 > Score1)
+                {
+                    m = txtPlayer2.Text + " WINS!";
+                }
+                if (Score1 == Score2)
+                {
+                    m = "TIE";
+                }
+                lblGameOver.Text = m;
+            }
         }
 
         private void BtnStart_Click(object? sender, EventArgs e)
@@ -265,6 +221,7 @@ namespace MemoryApp
                     ClearTiles();
                     ShuffleList();
                     ShowTurn();
+                    DisplayStatus();
                 }
                 else
                 {
