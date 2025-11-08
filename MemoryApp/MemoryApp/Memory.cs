@@ -25,6 +25,12 @@ namespace MemoryApp
         int ClickCount = 0;
         int Score1 = 0;
         int Score2 = 0;
+        private readonly Color playerOneHighlightColor = Color.LightBlue;
+        private readonly Color playerTwoHighlightColor = Color.LightGreen;
+        private readonly Dictionary<Button, TurnEnum> matchedButtonOwners = new();
+        private Color player1LabelDefaultBackColor;
+        private Color player2LabelDefaultBackColor;
+        private Color tileDefaultBackColor;
 
         public frmMemory()
         {
@@ -53,6 +59,9 @@ namespace MemoryApp
             lstButtons = new() { btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14, btn15, btn16, btn17, btn18, btn19, btn20 };
             lstCards = new() { "Bu", "Bu", "20", "20", "XI", "XI", "66", "66", "tt", "tt", "Pr", "Pr", "Fn", "Fn", "!,", "!,", "10", "10", "Me", "Me" };
             lst = new() { "Bu", "Bu", "20", "20", "XI", "XI", "66", "66", "tt", "tt", "Pr", "Pr", "Fn", "Fn", "!,", "!,", "10", "10", "Me", "Me" };
+            tileDefaultBackColor = btn1.BackColor;
+            player1LabelDefaultBackColor = lblPlayer1.BackColor;
+            player2LabelDefaultBackColor = lblPlayer2.BackColor;
             lstButtons.ForEach(b => b.Enabled = false);
         }
 
@@ -102,6 +111,7 @@ namespace MemoryApp
             if (Guess1 == Guess2)
             {
                 TallyScore();
+                AssignMatchToCurrentPlayer(Guess1);
                 lstButtons.Where(b => b.Text != "").ToList().ForEach(b => b.Enabled = false);
                 lstButtons.Where(b => b.Text == "").ToList().ForEach(b => b.Enabled = true);
                 GameOver();
@@ -142,6 +152,7 @@ namespace MemoryApp
 
         private void ClearTiles()
         {
+            ResetHighlighting();
             lstButtons.ForEach(b => b.Text = "");
             lstButtons.ForEach(b => b.Enabled = true);
             Guess1 = "NO";
@@ -158,6 +169,71 @@ namespace MemoryApp
             {
                 lblPlayerTurn.Text = txtPlayer2.Text;
             }
+        }
+
+        private TurnEnum GetCurrentTurn()
+        {
+            return Turn == TurnEnum.One.ToString() ? TurnEnum.One : TurnEnum.Two;
+        }
+
+        private Color GetHighlightColor(TurnEnum player)
+        {
+            return player == TurnEnum.One ? playerOneHighlightColor : playerTwoHighlightColor;
+        }
+
+        private void AssignMatchToCurrentPlayer(string matchValue)
+        {
+            var currentPlayer = GetCurrentTurn();
+            foreach (var button in lstButtons.Where(b => b.Text == matchValue))
+            {
+                if (!matchedButtonOwners.ContainsKey(button))
+                {
+                    matchedButtonOwners[button] = currentPlayer;
+                }
+            }
+        }
+
+        private void ApplyEndGameHighlighting()
+        {
+            HighlightPlayerNames();
+            HighlightMatchedTiles();
+        }
+
+        private void HighlightPlayerNames()
+        {
+            lblPlayer1.BackColor = playerOneHighlightColor;
+            lblPlayer2.BackColor = playerTwoHighlightColor;
+        }
+
+        private void HighlightMatchedTiles()
+        {
+            foreach (var match in matchedButtonOwners)
+            {
+                match.Key.UseVisualStyleBackColor = false;
+                match.Key.BackColor = GetHighlightColor(match.Value);
+            }
+        }
+
+        private void ResetHighlighting()
+        {
+            matchedButtonOwners.Clear();
+            ResetPlayerNameHighlighting();
+            ClearTileHighlights();
+        }
+
+        private void ResetPlayerNameHighlighting()
+        {
+            lblPlayer1.BackColor = player1LabelDefaultBackColor;
+            lblPlayer2.BackColor = player2LabelDefaultBackColor;
+        }
+
+        private void ClearTileHighlights()
+        {
+            lstButtons.ForEach(b =>
+            {
+                b.UseVisualStyleBackColor = true;
+                b.BackColor = tileDefaultBackColor;
+            });
         }
 
         private void DisplayStatus()
@@ -204,6 +280,7 @@ namespace MemoryApp
                     m = "TIE";
                 }
                 lblGameOver.Text = m;
+                ApplyEndGameHighlighting();
             }
         }
 
